@@ -265,7 +265,9 @@
         import { getFirestore, collection, addDoc, setDoc, doc, query, orderBy, onSnapshot, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
+        
         const firebaseConfig = {
+
             apiKey: "AIzaSyAio4XgN8Iq5W7TMx1H7sybgK5PDp1x0j4",
             authDomain: "bebu-chat-91531.firebaseapp.com",
             projectId: "bebu-chat-91531",
@@ -274,11 +276,11 @@
             appId: "1:569412628886:web:e40f5675a0332aff9a6db7"
         };
 
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const storage = getStorage(app);
-
         const ALLOWED_USERS = ['ceazarsolcruzjr@gmail.com', 'nazarenolovelyjoy4@gmail.com'];
         let currentEmoji = "😊";
         let userLocation = null;
