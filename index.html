@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,215 +5,259 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>BEBU ❤️ Private Space</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
         :root {
-            --primary: #ff6b81;
-            --primary-light: #ff8fa3;
-            --accent: #e63946;
-            --bg-soft: #fff5f6;
-            --glass: rgba(255, 255, 255, 0.82);
-            --glass-border: rgba(255, 255, 255, 0.7);
-            --text-dark: #4d1d23;
-            --shadow-red: 0 15px 35px rgba(255, 107, 129, 0.18);
+            --primary: #ff758c;
+            --secondary: #ff7eb3;
+            --accent: #ef476f;
+            --bg-gradient: linear-gradient(135deg, #fff5f6 0%, #ffffff 100%);
+            --glass: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text-main: #5d2e36;
+            --shadow: 0 10px 30px rgba(255, 117, 140, 0.15);
+            --safe-bottom: env(safe-area-inset-bottom);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+        }
 
         body {
             font-family: 'Nunito', sans-serif;
-            background: radial-gradient(circle at top right, #fff0f3, #fff);
-            color: var(--text-dark);
+            background: var(--bg-gradient);
+            color: var(--text-main);
             height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        #bg-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-        .bg-heart { position: absolute; color: var(--primary-light); opacity: 0.15; animation: floatUp 15s infinite linear; }
-        @keyframes floatUp {
-            0% { transform: translateY(110vh) rotate(0deg) scale(0.8); opacity: 0; }
-            10% { opacity: 0.2; }
-            90% { opacity: 0.1; }
-            100% { transform: translateY(-20vh) rotate(360deg) scale(1.2); opacity: 0; }
-        }
+        /* --- Animations --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(239, 71, 111, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(239, 71, 111, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 71, 111, 0); } }
 
-        .card { 
-            background: var(--glass); backdrop-filter: blur(16px);
-            padding: 25px; border-radius: 30px; margin-bottom: 20px;
-            box-shadow: var(--shadow-red); border: 1px solid var(--glass-border);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        button { transition: all 0.2s ease; cursor: pointer; }
-        button:active { transform: scale(0.92); }
-
-        /* --- AUTH SCREEN --- */
+        /* --- Auth Screen --- */
         #auth-screen {
-            position: fixed; inset: 0; z-index: 1000;
-            background: linear-gradient(135deg, #ff6b81, #ff9a9e);
+            position: fixed; inset: 0; z-index: 2000;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.6s ease-in-out;
         }
         #auth-screen.hidden { opacity: 0; pointer-events: none; transform: scale(1.1); }
+        
         .auth-card {
-            background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(25px);
-            padding: 3rem 2rem; border-radius: 40px; text-align: center;
-            width: 85%; max-width: 380px; box-shadow: 0 30px 60px rgba(0,0,0,0.15);
-        }
-        .auth-card h1 { font-family: 'Dancing Script', cursive; font-size: 3.8rem; color: var(--accent); }
-        .auth-card input { 
-            width: 100%; padding: 16px; margin: 8px 0; border-radius: 18px;
-            border: 1px solid rgba(255, 107, 129, 0.2); outline: none;
+            background: var(--glass); backdrop-filter: blur(20px);
+            padding: 40px 30px; border-radius: 40px; text-align: center;
+            width: 88%; max-width: 400px; border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
         }
 
-        /* --- COUNTER UPGRADE --- */
-        .counter-container { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
-        .counter-box { text-align: center; flex: 1; }
-        .counter-val { 
-            font-size: 2.2rem; font-weight: 800; display: block;
-            background: linear-gradient(to bottom, var(--accent), var(--primary));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: softPulse 4s infinite ease-in-out;
+        /* --- Main UI Components --- */
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(15px);
+            border-radius: 28px; padding: 20px; border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow); margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-out;
+            transition: transform 0.3s ease;
         }
-        .counter-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; opacity: 0.6; text-transform: uppercase; }
-        @keyframes softPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.8; } }
+        .glass-card:hover { transform: translateY(-3px); }
 
-        /* --- CHAT UPGRADE --- */
-        #chat-window { 
-            height: calc(100vh - 280px); overflow-y: auto; padding: 10px; 
+        input {
+            width: 100%; padding: 15px 20px; margin: 10px 0; border-radius: 15px;
+            border: 1px solid rgba(255, 117, 140, 0.2); outline: none;
+            background: rgba(255,255,255,0.8); font-size: 1rem;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(255,117,140,0.1); }
+
+        button {
+            border: none; border-radius: 18px; font-weight: 800;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        button:active { transform: scale(0.92); }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--accent), var(--primary));
+            color: white; padding: 16px 24px; width: 100%;
+            box-shadow: 0 8px 20px rgba(239, 71, 111, 0.3);
+        }
+
+        /* --- Monthsary Celebration --- */
+        .celebration-banner {
+            display: none; background: linear-gradient(45deg, #ffd700, #ff758c);
+            color: white; padding: 15px; border-radius: 20px; text-align: center;
+            margin-bottom: 20px; font-weight: 800; animation: pulseGlow 2s infinite;
+        }
+
+        .counter-grid { display: flex; justify-content: space-around; margin: 20px 0; }
+        .count-item { text-align: center; }
+        .count-val { font-size: 2.5rem; font-weight: 800; color: var(--accent); display: block; text-shadow: 2px 2px 0px rgba(255,255,255,0.5); }
+        .count-lab { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; }
+
+        /* --- Chat System --- */
+        #chat-window {
+            height: calc(100vh - 320px); overflow-y: auto; padding: 15px;
             display: flex; flex-direction: column; gap: 12px; scrollbar-width: none;
         }
-        .msg-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 4px; animation: msgPop 0.3s ease-out; }
-        .msg-row.me { flex-direction: row-reverse; }
-        
-        .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; flex-shrink: 0; }
-        
-        .bubble { 
-            padding: 12px 16px; border-radius: 20px; font-size: 0.95rem; max-width: 70%;
-            line-height: 1.4; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        }
-        .bubble.me { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(230,57,70,0.2); }
-        .bubble.partner { background: white; color: var(--text-dark); border-bottom-left-radius: 4px; }
-        
-        .loc-tag { font-size: 0.65rem; display: block; margin-top: 4px; opacity: 0.8; font-weight: 600; }
-        @keyframes msgPop { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .msg-group { display: flex; flex-direction: column; max-width: 80%; animation: fadeIn 0.3s ease; }
+        .msg-group.me { align-self: flex-end; align-items: flex-end; }
+        .msg-group.partner { align-self: flex-start; align-items: flex-start; }
 
-        .chat-input-area { 
-            display: flex; gap: 10px; background: #fff; padding: 8px 12px; 
-            border-radius: 35px; box-shadow: var(--shadow-red); margin-top: 5px;
-            border: 1px solid transparent; transition: 0.3s;
+        .bubble {
+            padding: 12px 18px; border-radius: 22px; font-size: 0.95rem; line-height: 1.5;
+            position: relative; transition: 0.3s;
         }
-        .chat-input-area:focus-within { border-color: var(--primary-light); box-shadow: 0 0 15px rgba(255,107,129,0.2); }
-        .chat-input-area input { flex: 1; border: none; outline: none; padding: 10px; font-size: 1rem; background: transparent; }
+        .me .bubble { background: linear-gradient(45deg, var(--accent), var(--primary)); color: white; border-bottom-right-radius: 4px; }
+        .partner .bubble { background: white; color: var(--text-main); border-bottom-left-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); }
         
-        /* --- NAV --- */
+        .msg-meta { font-size: 0.6rem; margin: 4px 6px; opacity: 0.5; font-weight: 700; }
+
+        .input-bar {
+            display: flex; gap: 10px; background: var(--glass); backdrop-filter: blur(15px);
+            padding: 10px 15px; border-radius: 30px; margin: 0 20px 10px;
+            border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+        }
+        #msg-input { border: none; background: transparent; padding: 10px; flex: 1; margin: 0; }
+
+        /* --- Mood System --- */
+        .mood-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 15px 0; }
+        .mood-item {
+            font-size: 1.8rem; background: white; height: 60px; display: flex;
+            align-items: center; justify-content: center; border-radius: 20px;
+            border: 2px solid transparent; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .mood-item.selected { border-color: var(--accent); background: #fff0f3; transform: scale(1.05); }
+
+        /* --- Navigation --- */
         .nav-bar {
-            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 450px; background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px); border-radius: 35px; padding: 10px;
-            display: flex; justify-content: space-around; box-shadow: var(--shadow-red); z-index: 900;
+            position: fixed; bottom: calc(15px + var(--safe-bottom)); left: 50%;
+            transform: translateX(-50%); width: 92%; max-width: 450px;
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px);
+            border-radius: 35px; padding: 12px; display: flex; justify-content: space-around;
+            box-shadow: 0 15px 40px rgba(255, 117, 140, 0.25); z-index: 1000;
+            border: 1px solid var(--glass-border);
         }
-        .nav-tab { color: #d1d1d1; transition: 0.3s; text-align: center; flex: 1; padding: 5px; }
-        .nav-tab.active { color: var(--accent); filter: drop-shadow(0 0 5px rgba(230,57,70,0.3)); transform: translateY(-5px); }
-        .nav-tab span { display: block; font-size: 0.6rem; font-weight: 800; margin-top: 2px; }
+        .nav-item { color: #d0b0b5; flex: 1; text-align: center; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 5px; position: relative; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.active::after { content: ''; position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background: var(--accent); border-radius: 50%; }
+        .nav-item i { font-size: 1.3rem; display: block; margin-bottom: 2px; }
+        .nav-item span { font-size: 0.65rem; font-weight: 800; display: block; }
 
-        .click-heart { position: fixed; color: var(--accent); pointer-events: none; z-index: 9999; animation: heartPop 0.7s ease-out forwards; }
-        @keyframes heartPop { 0% { transform: scale(0); opacity: 1; } 100% { transform: scale(2.5) translateY(-40px); opacity: 0; } }
+        /* --- BG Elements --- */
+        #bg-elements { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+        .glow-circle {
+            position: absolute; width: 300px; height: 300px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,117,140,0.15) 0%, rgba(255,255,255,0) 70%);
+            filter: blur(40px);
+        }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="bg-canvas"></div>
+    <div id="bg-elements">
+        <div class="glow-circle" style="top: -10%; right: -10%;"></div>
+        <div class="glow-circle" style="bottom: 10%; left: -10%; background: radial-gradient(circle, rgba(255,126,179,0.1) 0%, rgba(255,255,255,0) 70%);"></div>
+        <div id="floating-hearts"></div>
+    </div>
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h1>Bebu</h1>
-            <p style="color: var(--primary); font-weight: 700; margin-bottom: 20px; letter-spacing: 1px;">PRIVATE SPACE</p>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Password">
-            <button id="login-btn" style="width: 100%; padding: 18px; margin-top: 15px; border: none; border-radius: 18px; background: linear-gradient(45deg, var(--accent), var(--primary)); color: white; font-weight: 700;">Unlock ❤️</button>
-            <p id="auth-error" style="color: var(--accent); font-size: 0.8rem; margin-top: 15px;"></p>
+            <h1 style="font-family: 'Dancing Script'; font-size: 4rem; color: var(--accent); text-shadow: 2px 2px 0 white;">Bebu</h1>
+            <p style="letter-spacing: 4px; font-size: 0.75rem; font-weight: 800; margin-bottom: 30px; opacity: 0.6; color: var(--text-main);">PRIVATE SPACE</p>
+            <input type="email" id="login-email" placeholder="Email Address">
+            <input type="password" id="login-pass" placeholder="Secret Password">
+            <button id="btn-login" class="btn-primary" style="margin-top: 20px;">
+                <span>Unlock Heart</span> <i class="fas fa-heart"></i>
+            </button>
+            <p id="auth-err" style="color: var(--accent); font-size: 0.85rem; margin-top: 15px; font-weight: 600;"></p>
         </div>
     </div>
 
-    <div id="app-content" style="display: none; flex: 1; overflow-y: auto; padding: 20px 20px 100px;">
-        <section id="page-home" class="page" style="display: none;">
-            <div class="card home-hero" style="text-align: center;">
-                <p style="font-family: 'Dancing Script', cursive; font-size: 2.2rem; color: var(--primary);">Lovingly together for</p>
-                <div class="counter-container">
-                    <div class="counter-box"><span id="count-y" class="counter-val">0</span><span class="counter-label">Years</span></div>
-                    <div class="counter-box"><span id="count-m" class="counter-val">0</span><span class="counter-label">Months</span></div>
-                    <div class="counter-box"><span id="count-d" class="counter-val">0</span><span class="counter-label">Days</span></div>
-                </div>
-                <p style="font-size: 0.75rem; opacity: 0.5; font-weight: 700;">Since October 25, 2025</p>
+    <div id="app-content" class="hidden" style="flex: 1; overflow-y: auto; padding: 20px 20px 130px;">
+        
+        <section id="page-home" class="page">
+            <div id="monthsary-alert" class="celebration-banner">
+                🎊 Happy Monthsary, My Love! ❤️
             </div>
-            
-            <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none;">
-                <h4 style="margin-bottom: 10px;"><i class="fas fa-heart"></i> Daily Note</h4>
-                <p id="quote-display" style="font-style: italic; opacity: 0.9;">"Every moment with you is a treasure I keep in my heart."</p>
+
+            <div class="glass-card" style="text-align: center; padding: 30px 20px;">
+                <h2 style="font-family: 'Dancing Script'; font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;">Together for</h2>
+                <div class="counter-grid">
+                    <div class="count-item"><span id="y-count" class="count-val">0</span><span class="count-lab">Years</span></div>
+                    <div class="count-item"><span id="m-count" class="count-val">0</span><span class="count-lab">Months</span></div>
+                    <div class="count-item"><span id="d-count" class="count-val">0</span><span class="count-lab">Days</span></div>
+                </div>
+                <div style="height: 1px; background: rgba(255,117,140,0.1); margin: 20px 0;"></div>
+                <p id="next-m-text" style="font-size: 0.85rem; font-weight: 800; color: var(--primary);"></p>
+            </div>
+
+            <div class="glass-card" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 25px;">
+                <h4 style="margin-bottom: 10px; font-weight: 800;"><i class="fas fa-quote-left"></i> Daily Reminder</h4>
+                <p style="font-style: italic; opacity: 0.95; font-size: 1.1rem; line-height: 1.4;">"Every single day with you is my new favorite day, Bebu."</p>
             </div>
         </section>
 
-        <section id="page-chat" class="page" style="display: none;">
+        <section id="page-chat" class="page hidden">
             <div id="chat-window"></div>
-            <div class="chat-input-area">
-                <input type="text" id="msg-input" placeholder="Say something sweet...">
-                <button id="send-msg" style="width: 42px; height: 42px; border-radius: 50%; background: var(--accent); color: white; border: none; box-shadow: 0 4px 10px rgba(230,57,70,0.2);"><i class="fas fa-paper-plane"></i></button>
+            <div class="input-bar">
+                <input type="text" id="msg-input" placeholder="Type a sweet message...">
+                <button id="btn-send" style="background: var(--accent); color: white; width: 45px; height: 45px; border-radius: 50%; box-shadow: 0 4px 10px rgba(239, 71, 111, 0.3);">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </section>
 
-        <section id="page-gallery" class="page" style="display: none;">
-            <div class="card" style="padding: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h2 style="font-family: 'Dancing Script', cursive; color: var(--accent);">Our Gallery</h2>
-                    <input type="file" id="photo-upload" style="display: none;">
-                    <button onclick="document.getElementById('photo-upload').click()" style="background: var(--primary); border: none; color: white; padding: 10px 18px; border-radius: 12px;"><i class="fas fa-camera"></i></button>
+        <section id="page-mood" class="page hidden">
+            <div class="glass-card">
+                <h3 style="text-align: center; margin-bottom: 5px;">My Mood</h3>
+                <p style="text-align: center; font-size: 0.8rem; opacity: 0.6; margin-bottom: 15px;">How are you feeling right now?</p>
+                <div class="mood-selector" id="mood-options">
+                    <div class="mood-item" data-emo="🥰">🥰</div>
+                    <div class="mood-item" data-emo="😊">😊</div>
+                    <div class="mood-item" data-emo="😴">😴</div>
+                    <div class="mood-item" data-emo="😢">😢</div>
+                    <div class="mood-item" data-emo="😤">😤</div>
+                    <div class="mood-item" data-emo="🥺">🥺</div>
+                    <div class="mood-item" data-emo="🔥">🔥</div>
+                    <div class="mood-item" data-emo="🍦">🍦</div>
                 </div>
-                <div class="gallery-wall" id="gallery-container" style="columns: 2; column-gap: 12px;"></div>
+                <input type="text" id="mood-note" placeholder="What's on your mind?..." maxlength="120">
+                <button id="btn-update-mood" class="btn-primary" style="margin-top: 10px;">Update My Status</button>
             </div>
-        </section>
 
-        <section id="page-mood" class="page" style="display: none;">
-            <div class="card" style="text-align: center;">
-                <h4 style="color: var(--accent); margin-bottom: 5px;">My Mood</h4>
-                <div class="mood-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0;">
-                    <div class="mood-btn" onclick="updateMood('😊', this)" style="font-size: 2rem; background: white; border-radius: 18px; padding: 12px 0;">😊</div>
-                    <div class="mood-btn" onclick="updateMood('🥰', this)" style="font-size: 2rem; background: white; border-radius: 18px; padding: 12px 0;">🥰</div>
-                    <div class="mood-btn" onclick="updateMood('😴', this)" style="font-size: 2rem; background: white; border-radius: 18px; padding: 12px 0;">😴</div>
-                    <div class="mood-btn" onclick="updateMood('😢', this)" style="font-size: 2rem; background: white; border-radius: 18px; padding: 12px 0;">😢</div>
-                    <div class="mood-btn" onclick="updateMood('😤', this)" style="font-size: 2rem; background: white; border-radius: 18px; padding: 12px 0;">😤</div>
-                    <div class="mood-btn" onclick="updateMood('🍦', this)" style="font-size: 2rem; background: white; border-radius: 18px; padding: 12px 0;">🍦</div>
-                    <div class="mood-btn" onclick="updateMood('🌹', this)" style="font-size: 2rem; background: white; border-radius: 18px; padding: 12px 0;">🌹</div>
-                    <div class="mood-btn" onclick="updateMood('💌', this)" style="font-size: 2rem; background: white; border-radius: 18px; padding: 12px 0;">💌</div>
-                </div>
-            </div>
-            <div class="card" style="display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.5);">
-                <div id="partner-emoji" style="font-size: 3rem;">...</div>
-                <div>
-                    <h4 style="color: var(--primary); font-size: 0.9rem;">Partner's Status</h4>
-                    <p id="partner-status-text" style="font-size: 0.8rem; opacity: 0.7;">Updated just now</p>
+            <div class="glass-card" style="display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.45);">
+                <div id="p-mood-emo" style="font-size: 3.5rem; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));">✨</div>
+                <div style="flex: 1;">
+                    <h4 style="font-size: 0.7rem; text-transform: uppercase; color: var(--accent); opacity: 0.7; letter-spacing: 1px;">Partner's Status</h4>
+                    <p id="p-mood-note" style="font-weight: 800; margin: 4px 0; font-size: 1.1rem; color: var(--text-main);">Offline</p>
+                    <span id="p-mood-time" style="font-size: 0.65rem; opacity: 0.5; font-weight: 700;"></span>
                 </div>
             </div>
         </section>
     </div>
 
     <nav class="nav-bar">
-        <div class="nav-tab active" onclick="nav('home', this)"><i class="fas fa-home"></i><span>HOME</span></div>
-        <div class="nav-tab" onclick="nav('chat', this)"><i class="fas fa-heart"></i><span>CHAT</span></div>
-        <div class="nav-tab" onclick="nav('gallery', this)"><i class="fas fa-images"></i><span>GALLERY</span></div>
-        <div class="nav-tab" onclick="nav('mood', this)"><i class="fas fa-smile"></i><span>MOOD</span></div>
-        <div class="nav-tab" id="logout-btn"><i class="fas fa-power-off"></i><span>EXIT</span></div>
+        <div class="nav-item active" onclick="showPage('home', this)"><i class="fas fa-home"></i><span>Home</span></div>
+        <div class="nav-item" onclick="showPage('chat', this)"><i class="fas fa-heart"></i><span>Chat</span></div>
+        <div class="nav-item" onclick="showPage('mood', this)"><i class="fas fa-face-smile"></i><span>Mood</span></div>
+        <div class="nav-item" id="btn-logout"><i class="fas fa-door-open"></i><span>Exit</span></div>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, setDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { getFirestore, collection, addDoc, setDoc, doc, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAio4XgN8Iq5W7TMx1H7sybgK5PDp1x0j4",
@@ -228,215 +271,208 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
-        const ALLOWED_USERS = ['ceazarsolcruzjr@gmail.com', 'nazarenolovelyjoy4@gmail.com'];
-        let currentLocation = null;
+        // --- AUTH FLOW ---
+        const loginBtn = document.getElementById('btn-login');
+        loginBtn.onclick = async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            const errEl = document.getElementById('auth-err');
+            
+            loginBtn.style.opacity = "0.7";
+            errEl.innerText = "Opening heart...";
 
-        // --- BG & CLICK EFFECTS ---
-        const bg = document.getElementById('bg-canvas');
-        for(let i=0; i<15; i++) {
-            const h = document.createElement('i');
-            h.className = 'fas fa-heart bg-heart';
-            h.style.left = Math.random() * 100 + 'vw';
-            h.style.animationDelay = Math.random() * 15 + 's';
-            h.style.fontSize = (Math.random() * 15 + 10) + 'px';
-            bg.appendChild(h);
-        }
-
-        document.addEventListener('click', (e) => {
-            if(e.target.closest('button') || e.target.closest('.nav-tab')) {
-                if(navigator.vibrate) navigator.vibrate(10);
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (e) {
+                errEl.innerText = "Wrong secret, Bebu ❤️";
+                loginBtn.style.opacity = "1";
             }
-            const h = document.createElement('i');
-            h.className = 'fas fa-heart click-heart';
-            h.style.left = (e.clientX - 10) + 'px';
-            h.style.top = (e.clientY - 10) + 'px';
-            document.body.appendChild(h);
-            setTimeout(() => h.remove(), 700);
-        });
-
-        // --- AUTH ---
-        document.getElementById('login-btn').onclick = async () => {
-            const email = document.getElementById('email').value.trim();
-            const pass = document.getElementById('password').value;
-            if(!ALLOWED_USERS.includes(email.toLowerCase())) {
-                document.getElementById('auth-error').innerText = "Access Denied 🔒";
-                return;
-            }
-            try { await signInWithEmailAndPassword(auth, email, pass); } 
-            catch (e) { document.getElementById('auth-error').innerText = "Wrong secret, Bebu ❤️"; }
         };
+
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-content').style.display = 'block';
+                document.getElementById('app-content').classList.remove('hidden');
                 initApp();
-                requestLocation();
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
-                document.getElementById('app-content').style.display = 'none';
+                document.getElementById('app-content').classList.add('hidden');
             }
         });
 
-        document.getElementById('logout-btn').onclick = () => signOut(auth);
-
+        // --- CORE APP LOGIC ---
         function initApp() {
-            updateCounter();
-            setInterval(updateCounter, 3600000); 
-            listenChat();
-            listenMood();
-            loadGallery();
-            nav('home', document.querySelector('.nav-tab'));
+            updateMonthsary();
+            setupChat();
+            setupMood();
+            createFloatingHearts();
+            requestNotifPermission();
         }
 
-        // --- PREMIUM COUNTER ---
-        function updateCounter() {
-            const startDate = new Date("2025-10-25");
+        // --- ENHANCED MONTHSARY SYSTEM ---
+        function updateMonthsary() {
+            const start = new Date("2025-10-25");
             const now = new Date();
             
-            let years = now.getFullYear() - startDate.getFullYear();
-            let months = now.getMonth() - startDate.getMonth();
-            let days = now.getDate() - startDate.getDate();
+            let years = now.getFullYear() - start.getFullYear();
+            let months = now.getMonth() - start.getMonth();
+            let days = now.getDate() - start.getDate();
 
             if (days < 0) {
                 months--;
-                const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-                days += lastMonth.getDate();
+                const prevMonthLastDay = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+                days += prevMonthLastDay;
             }
             if (months < 0) {
                 years--;
                 months += 12;
             }
 
-            document.getElementById('count-y').innerText = years;
-            document.getElementById('count-m').innerText = months;
-            document.getElementById('count-d').innerText = days;
-        }
+            document.getElementById('y-count').innerText = years;
+            document.getElementById('m-count').innerText = months;
+            document.getElementById('d-count').innerText = days;
 
-        // --- LOCATION SYSTEM ---
-        function requestLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (pos) => {
-                    const { latitude, longitude } = pos.coords;
-                    try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-                        const data = await res.json();
-                        currentLocation = data.address.city || data.address.town || data.address.village || "Somewhere Special";
-                    } catch {
-                        currentLocation = "Coordinates Hidden";
-                    }
-                }, () => { currentLocation = null; });
+            // celebration on the 25th
+            if (now.getDate() === 25) {
+                document.getElementById('monthsary-alert').style.display = 'block';
+                confetti({ 
+                    particleCount: 150, 
+                    spread: 70, 
+                    origin: { y: 0.6 }, 
+                    colors: ['#ff758c', '#ef476f', '#ffd700'] 
+                });
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("💖 Happy Monthsary, Bebu!");
+                }
             }
+
+            // Countdown Logic
+            let nextM = new Date(now.getFullYear(), now.getMonth(), 25);
+            if (now.getDate() >= 25) nextM.setMonth(nextM.getMonth() + 1);
+            const diff = Math.ceil((nextM - now) / (1000 * 60 * 60 * 24));
+            document.getElementById('next-m-text').innerHTML = `<i class="fas fa-hourglass-half"></i> ${diff} days until our next monthsary ✨`;
         }
 
-        // --- CHAT SYSTEM (FIXED & UPGRADED) ---
-        const chatWin = document.getElementById('chat-window');
-        document.getElementById('send-msg').onclick = sendMsg;
-        document.getElementById('msg-input').onkeydown = (e) => { if(e.key==='Enter') sendMsg(); };
-
-        async function sendMsg() {
-            const input = document.getElementById('msg-input');
-            const text = input.value.trim();
-            if(!text) return;
+        // --- STABLE CHAT SYSTEM ---
+        let chatUnsub = null;
+        function setupChat() {
+            if (chatUnsub) chatUnsub();
+            const chatWin = document.getElementById('chat-window');
+            const q = query(collection(db, "messages"), orderBy("timestamp", "asc"), limit(60));
             
-            const msgData = {
-                text,
-                uid: auth.currentUser.uid,
-                email: auth.currentUser.email,
-                timestamp: serverTimestamp(),
-                location: currentLocation
-            };
-
-            input.value = "";
-            try { await addDoc(collection(db, "messages"), msgData); } 
-            catch (e) { console.error("Send error:", e); }
-        }
-
-        function listenChat() {
-            const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
-            onSnapshot(q, (snap) => {
-                chatWin.innerHTML = "";
+            chatUnsub = onSnapshot(q, (snap) => {
+                chatWin.innerHTML = ""; 
                 snap.forEach(d => {
                     const m = d.data();
-                    if(!m.timestamp) return; // Prevent flickering of pending msgs
-                    
+                    if (!m.timestamp) return;
+
                     const isMe = m.uid === auth.currentUser.uid;
-                    const initial = m.email ? m.email.charAt(0).toUpperCase() : '❤️';
+                    const div = document.createElement('div');
+                    div.className = `msg-group ${isMe ? 'me' : 'partner'}`;
                     
-                    const row = document.createElement('div');
-                    row.className = `msg-row ${isMe ? 'me' : 'partner'}`;
+                    const time = m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     
-                    row.innerHTML = `
-                        <div class="avatar">${initial}</div>
-                        <div class="bubble ${isMe ? 'me' : 'partner'}">
-                            ${m.text}
-                            ${m.location ? `<span class="loc-tag">📍 ${m.location}</span>` : ''}
-                        </div>
+                    div.innerHTML = `
+                        <div class="bubble">${m.text}</div>
+                        <span class="msg-meta">${time}</span>
                     `;
-                    chatWin.appendChild(row);
+                    chatWin.appendChild(div);
                 });
                 chatWin.scrollTo({ top: chatWin.scrollHeight, behavior: 'smooth' });
             });
         }
 
-        // --- MOOD & GALLERY (PRESERVED) ---
-        window.updateMood = async (emoji, el) => {
-            document.querySelectorAll('.mood-btn').forEach(b => {
-                b.style.borderColor = 'transparent';
-                b.style.background = 'white';
+        document.getElementById('btn-send').onclick = async () => {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = "";
+            await addDoc(collection(db, "messages"), {
+                text,
+                uid: auth.currentUser.uid,
+                timestamp: serverTimestamp()
             });
-            el.style.borderColor = 'var(--primary)';
-            el.style.background = 'var(--bg-soft)';
-            await setDoc(doc(db, "moods", auth.currentUser.uid), { emoji, timestamp: serverTimestamp() });
         };
 
-        function listenMood() {
+        // --- ENHANCED MOOD SYSTEM ---
+        let selectedEmoji = "🥰";
+        document.querySelectorAll('.mood-item').forEach(item => {
+            item.onclick = () => {
+                document.querySelectorAll('.mood-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+                selectedEmoji = item.dataset.emo;
+            };
+        });
+
+        document.getElementById('btn-update-mood').onclick = async () => {
+            const note = document.getElementById('mood-note').value.trim();
+            const btn = document.getElementById('btn-update-mood');
+            btn.innerText = "Updating...";
+            
+            await setDoc(doc(db, "moods", auth.currentUser.uid), {
+                emoji: selectedEmoji,
+                note: note || "Feeling good!",
+                timestamp: serverTimestamp()
+            });
+            
+            btn.innerText = "Update My Status";
+            document.getElementById('mood-note').value = "";
+        };
+
+        function setupMood() {
             onSnapshot(collection(db, "moods"), (snap) => {
                 snap.forEach(d => {
-                    if(d.id !== auth.currentUser.uid) {
-                        document.getElementById('partner-emoji').innerText = d.data().emoji;
+                    if (d.id !== auth.currentUser.uid) {
+                        const data = d.data();
+                        document.getElementById('p-mood-emo').innerText = data.emoji;
+                        document.getElementById('p-mood-note').innerText = data.note ? `"${data.note}"` : "No status note";
+                        if (data.timestamp) {
+                            const t = data.timestamp.toDate();
+                            document.getElementById('p-mood-time').innerText = `Updated ${t.getHours()}:${t.getMinutes().toString().padStart(2, '0')}`;
+                        }
                     }
                 });
             });
         }
 
-        document.getElementById('photo-upload').onchange = async (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            const refImg = ref(storage, `gallery/${Date.now()}_${file.name}`);
-            await uploadBytes(refImg, file);
-            const url = await getDownloadURL(refImg);
-            await addDoc(collection(db, "photos"), { url, timestamp: serverTimestamp() });
-        };
-
-        function loadGallery() {
-            const q = query(collection(db, "photos"), orderBy("timestamp", "desc"));
-            onSnapshot(q, (snap) => {
-                const container = document.getElementById('gallery-container');
-                container.innerHTML = "";
-                snap.forEach(d => {
-                    container.innerHTML += `<img src="${d.data().url}" style="width: 100%; margin-bottom: 12px; border-radius: 20px; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">`;
-                });
-            });
-        }
-
-        // --- NAVIGATION ---
-        window.nav = (id, el) => {
-            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            const target = document.getElementById('page-'+id);
-            target.style.display = 'block';
-            target.style.animation = 'fadeIn 0.4s ease';
-            
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        // --- NAVIGATION ENGINE ---
+        window.showPage = (id, el) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById('page-' + id).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             el.classList.add('active');
-            
-            if(id === 'chat') {
-                setTimeout(() => { chatWin.scrollTop = chatWin.scrollHeight; }, 100);
+            if (id === 'chat') {
+                const win = document.getElementById('chat-window');
+                win.scrollTop = win.scrollHeight;
             }
         };
 
+        // --- VISUAL FX ---
+        function createFloatingHearts() {
+            const container = document.getElementById('floating-hearts');
+            const hearts = ['❤️', '💖', '✨', '🌸'];
+            for (let i = 0; i < 12; i++) {
+                const heart = document.createElement('div');
+                heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.cssText = `
+                    position: absolute;
+                    left: ${Math.random() * 100}vw;
+                    top: ${Math.random() * 100}vh;
+                    opacity: 0.15;
+                    font-size: ${Math.random() * 20 + 15}px;
+                    animation: float ${Math.random() * 3 + 4}s infinite ease-in-out;
+                    z-index: -1;
+                `;
+                container.appendChild(heart);
+            }
+        }
+
+        function requestNotifPermission() {
+            if ("Notification" in window) Notification.requestPermission();
+        }
     </script>
 </body>
 </html>
