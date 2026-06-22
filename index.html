@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>BEBU ❤️ Private Space</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -14,12 +13,13 @@
             --primary: #ff758c;
             --secondary: #ff7eb3;
             --accent: #ef476f;
-            --bg-gradient: linear-gradient(135deg, #fff5f6 0%, #ffffff 100%);
-            --glass: rgba(255, 255, 255, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.5);
+            --bg: #fff0f4;
+            --glass: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.4);
             --text-main: #5d2e36;
-            --shadow: 0 10px 30px rgba(255, 117, 140, 0.15);
-            --safe-bottom: env(safe-area-inset-bottom);
+            --shadow: 0 20px 40px rgba(239, 71, 111, 0.12);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --nav-h: 84px;
         }
 
         * { 
@@ -29,11 +29,1188 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        body {
+        html, body {
+            height: 100%; 
+            overflow: hidden;
             font-family: 'Nunito', sans-serif;
-            background: var(--bg-gradient);
             color: var(--text-main);
-            height: 100vh;
+            background: var(--bg);
+        }
+
+        /* ─── HARDWARE-ACCELERATED ANIMATIONS ─── */
+        @keyframes pulseGlow { 
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 71, 111, 0.4); }
+            70% { box-shadow: 0 0 0 18px rgba(239, 71, 111, 0); } 
+        }
+        @keyframes navPing { 
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); } 
+        }
+
+        /* ─── THREE.JS INTERACTIVE CANVAS ─── */
+        #three-canvas {
+            position: fixed; 
+            inset: 0; 
+            z-index: 0;
+            width: 100%; 
+            height: 100%;
+        }
+        #canvas-tint {
+            position: fixed; 
+            inset: 0; 
+            z-index: 1;
+            background: linear-gradient(180deg, rgba(255, 240, 244, 0.2) 0%, rgba(255, 240, 244, 0.5) 100%);
+            pointer-events: none;
+        }
+
+        /* ─── FLUID MORPH LOADER (SVG GRAPHICS) ─── */
+        #blob-loader {
+            position: fixed; 
+            inset: 0; 
+            z-index: 3000;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        #blob-loader.exit { 
+            opacity: 0; 
+            pointer-events: none; 
+            transform: scale(1.1); 
+        }
+        #blob-svg { 
+            width: 220px; 
+            height: 220px; 
+            filter: drop-shadow(0 10px 25px rgba(239, 71, 111, 0.3));
+        }
+
+        /* ─── AUTH SCREEN & PREMIUM UI CARDS ─── */
+        #auth-screen {
+            position: fixed; 
+            inset: 0; 
+            z-index: 2000;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            padding: 20px;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #auth-screen.hidden { 
+            opacity: 0; 
+            pointer-events: none; 
+        }
+
+        .auth-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px) saturate(1.6);
+            -webkit-backdrop-filter: blur(25px) saturate(1.6);
+            padding: 48px 36px 40px;
+            border-radius: 40px;
+            text-align: center;
+            width: 100%; 
+            max-width: 380px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 30px 60px rgba(239, 71, 111, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+        }
+
+        /* ─── AFTER-LOGIN RADIANT SPHERE ─── */
+        #morph-burst {
+            position: fixed; 
+            inset: 0; 
+            z-index: 2500;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            pointer-events: none; 
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        #burst-circle {
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0%, var(--primary) 55%, var(--accent) 100%);
+            transform: scale(0);
+            box-shadow: 0 0 50px 20px rgba(239, 71, 111, 0.4);
+        }
+
+        /* ─── STRUCTURED PREMIUM LAYOUT ─── */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px) saturate(1.4);
+            -webkit-backdrop-filter: blur(25px) saturate(1.4);
+            border-radius: 28px; 
+            padding: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            margin-bottom: 20px;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+        }
+        .glass-card:active { 
+            transform: scale(0.99); 
+        }
+
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%; 
+            padding: 16px 20px; 
+            margin: 10px 0;
+            border-radius: 18px;
+            border: 1.5px solid rgba(255, 117, 140, 0.15); 
+            outline: none;
+            background: rgba(255, 255, 255, 0.75);
+            font-family: 'Nunito', sans-serif; 
+            font-size: 1rem; 
+            color: var(--text-main);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
+        }
+        input:focus { 
+            border-color: var(--primary); 
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 0 4px rgba(255, 117, 140, 0.15); 
+        }
+
+        button {
+            border: none; 
+            border-radius: 20px; 
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+            transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease, opacity 0.3s;
+        }
+        button:active { 
+            transform: scale(0.96) !important; 
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--accent), var(--primary));
+            color: white; 
+            padding: 18px 28px; 
+            width: 100%;
+            box-shadow: 0 8px 25px rgba(239, 71, 111, 0.25);
+            font-size: 1rem;
+        }
+        .btn-primary:hover { 
+            box-shadow: 0 12px 30px rgba(239, 71, 111, 0.35); 
+        }
+
+        .celebration-banner {
+            display: none;
+            background: linear-gradient(45deg, #ffd700, #ff758c);
+            color: white; 
+            padding: 16px; 
+            border-radius: 22px; 
+            text-align: center;
+            margin-bottom: 20px; 
+            font-weight: 800; 
+            font-size: 1.05rem;
+            animation: pulseGlow 2s infinite;
+        }
+        .counter-grid { 
+            display: flex; 
+            justify-content: space-around; 
+            margin: 20px 0 10px; 
+        }
+        .count-item { 
+            text-align: center; 
+        }
+        .count-val { 
+            font-size: 2.8rem; 
+            font-weight: 800; 
+            color: var(--accent); 
+            display: block; 
+            line-height: 1;
+        }
+        .count-lab { 
+            font-size: 0.7rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            opacity: 0.6; 
+            font-weight: 800;
+        }
+
+        /* ─── LIQUID-SMOOTH VIEW VIEWPORT CONTAINER ─── */
+        #app-content {
+            position: fixed; 
+            inset: 0; 
+            z-index: 2;
+            display: flex; 
+            flex-direction: column;
+            opacity: 0; 
+            pointer-events: none;
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        #app-content.visible { 
+            opacity: 1; 
+            pointer-events: all; 
+        }
+
+        #pages-viewport {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .page {
+            position: absolute; 
+            inset: 0;
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding: 24px 20px calc(var(--nav-h) + 30px);
+            opacity: 0;
+            pointer-events: none;
+            transform: translate3d(100%, 0, 0);
+            transition: opacity 0.45s cubic-bezier(0.32, 0.94, 0.6, 1),
+                        transform 0.45s cubic-bezier(0.32, 0.94, 0.6, 1);
+            scrollbar-width: none;
+        }
+        .page::-webkit-scrollbar { display: none; }
+        
+        /* Transition States */
+        .page.active {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            pointer-events: all;
+        }
+        .page.exit-left {
+            opacity: 0;
+            transform: translate3d(-100%, 0, 0);
+        }
+        .page.exit-right {
+            opacity: 0;
+            transform: translate3d(100%, 0, 0);
+        }
+
+        /* ─── MULTI-USER CHAT ENGINE UI ─── */
+        #chat-window {
+            height: calc(100% - 80px);
+            overflow-y: auto; 
+            padding: 10px 2px;
+            display: flex; 
+            flex-direction: column; 
+            gap: 14px;
+            scrollbar-width: none;
+        }
+        #chat-window::-webkit-scrollbar { display: none; }
+        #page-chat { padding-bottom: calc(var(--nav-h) + 90px); }
+
+        .input-bar {
+            position: fixed;
+            bottom: calc(var(--nav-h) + 20px);
+            left: 50%; 
+            transform: translateX(-50%);
+            width: calc(100% - 40px); 
+            max-width: 450px;
+            display: flex; 
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 10px 14px; 
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            z-index: 500;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        #msg-input { 
+            border: none; 
+            background: transparent; 
+            padding: 10px 4px; 
+            flex: 1; 
+            margin: 0; 
+        }
+        #msg-input:focus { 
+            box-shadow: none; 
+            border-color: transparent; 
+        }
+
+        .msg-group { 
+            display: flex; 
+            flex-direction: column; 
+            max-width: 78%; 
+            transition: transform 0.25s ease;
+        }
+        .msg-group.me { 
+            align-self: flex-end; 
+            align-items: flex-end; 
+        }
+        .msg-group.partner { 
+            align-self: flex-start; 
+            align-items: flex-start; 
+        }
+
+        .bubble {
+            padding: 14px 20px; 
+            border-radius: 24px;
+            font-size: 0.98rem; 
+            line-height: 1.45;
+            transition: transform 0.1s ease;
+        }
+        .bubble:active { 
+            transform: scale(0.96); 
+        }
+        .me .bubble {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white; 
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 6px 20px rgba(239, 71, 111, 0.2);
+        }
+        .partner .bubble {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--glass-border);
+        }
+        .msg-meta { 
+            font-size: 0.65rem; 
+            margin: 4px 8px; 
+            opacity: 0.5; 
+            font-weight: 700; 
+        }
+
+        #btn-send {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white; 
+            width: 48px; 
+            height: 48px;
+            border-radius: 50%; 
+            flex-shrink: 0;
+            box-shadow: 0 5px 15px rgba(239, 71, 111, 0.25);
+        }
+
+        /* ─── MOOD ENGINE UI ─── */
+        .mood-selector { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 12px; 
+            margin: 18px 0; 
+        }
+        .mood-item {
+            font-size: 1.9rem; 
+            background: rgba(255, 255, 255, 0.6);
+            height: 64px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            border-radius: 20px; 
+            border: 2px solid transparent;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+        }
+        .mood-item:hover { 
+            transform: translateY(-2px); 
+        }
+        .mood-item.selected { 
+            border-color: var(--accent); 
+            background: #fff0f3; 
+            transform: scale(1.08); 
+            box-shadow: 0 6px 15px rgba(239, 71, 111, 0.12);
+        }
+
+        /* ─── NAVIGATION BAR ─── */
+        .nav-bar {
+            position: fixed; 
+            bottom: calc(16px + var(--safe-bottom)); 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%; 
+            max-width: 430px;
+            height: var(--nav-h);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(30px) saturate(1.5);
+            -webkit-backdrop-filter: blur(30px) saturate(1.5);
+            border-radius: 32px; 
+            padding: 12px 10px;
+            display: flex; 
+            justify-content: space-around;
+            box-shadow: 0 16px 40px rgba(255, 117, 140, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            z-index: 1000;
+            border: 1px solid var(--glass-border);
+        }
+        .nav-item {
+            color: #c9a7ae; 
+            flex: 1; 
+            text-align: center;
+            padding: 6px 2px;
+            position: relative; 
+            border-radius: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .nav-item.active { 
+            color: var(--accent); 
+        }
+        .nav-item.active i { 
+            animation: navPing 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute; 
+            bottom: 2px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px; 
+            height: 6px;
+            background: var(--accent); 
+            border-radius: 50%;
+            box-shadow: 0 0 8px 2px rgba(239, 71, 111, 0.5);
+        }
+        .nav-item::after {
+            content: '';
+            position: absolute; 
+            top: 50%; 
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 50px; 
+            height: 50px; 
+            border-radius: 50%;
+            background: rgba(239, 71, 111, 0.08);
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .nav-item.active::after { 
+            transform: translate(-50%, -50%) scale(1); 
+        }
+        .nav-item i { 
+            font-size: 1.3rem; 
+            display: block; 
+            margin-bottom: 4px; 
+        }
+        .nav-item span { 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            display: block; 
+            letter-spacing: 0.5px; 
+        }
+
+        .quote-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; 
+            border: none; 
+            padding: 26px 24px;
+            box-shadow: 0 14px 35px rgba(255, 117, 140, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        .partner-mood-card {
+            display: flex; 
+            align-items: center; 
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.35);
+        }
+        #p-mood-emo { 
+            font-size: 3.6rem; 
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.08)); 
+        }
+
+        .hidden { 
+            display: none !important; 
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="three-canvas"></canvas>
+<div id="canvas-tint"></div>
+
+<div id="blob-loader">
+    <svg id="blob-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <radialGradient id="blobGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                <stop offset="60%" stop-color="#ff7eb3" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#ef476f" stop-opacity="0.65"/>
+            </radialGradient>
+            <filter id="blobBlur">
+                <feGaussianBlur stdDeviation="3"/>
+            </filter>
+        </defs>
+        <path fill="url(#blobGrad)" filter="url(#blobBlur)">
+            <animate
+                attributeName="d"
+                dur="4s"
+                repeatCount="indefinite"
+                calcMode="spline"
+                keySplines="0.45, 0, 0.55, 1; 0.45, 0, 0.55, 1; 0.45, 0, 0.55, 1; 0.45, 0, 0.55, 1; 0.45, 0, 0.55, 1"
+                values="
+                    M 100 50 C 135 35, 165 45, 160 85 C 155 125, 135 145, 100 155 C 65 145, 45 125, 40 85 C 35 45, 65 35, 100 50 Z;
+                    M 100 42 C 142 28, 172 58, 165 95 C 158 132, 128 152, 100 160 C 72 152, 42 132, 35 95 C 28 58, 58 28, 100 42 Z;
+                    M 100 46 C 130 25, 175 50, 168 90 C 161 130, 132 148, 100 158 C 68 148, 39 130, 32 90 C 25, 50, 70, 25, 100 46 Z;
+                    M 100 54 C 132 38, 160 52, 156 86 C 152 120, 138 142, 100 152 C 62 142, 48 120, 44 86 C 40 52, 68 38, 100 54 Z;
+                    M 100 50 C 135 35, 165 45, 160 85 C 155 125, 135 145, 100 155 C 65 145, 45 125, 40 85 C 35 45, 65 35, 100 50 Z
+                "/>
+        </path>
+        <text x="100" y="106" text-anchor="middle" fill="white" font-family="Dancing Script, cursive" font-size="24" font-weight="700" opacity="0.95">Bebu</text>
+    </svg>
+</div>
+
+<div id="morph-burst">
+    <div id="burst-circle"></div>
+</div>
+
+<div id="auth-screen">
+    <div class="auth-card" id="auth-card-element">
+        <h1 style="font-family:'Dancing Script';font-size:4.2rem;color:var(--accent);text-shadow:2px 2px 0 rgba(255,255,255,0.7);line-height:1.1;">Bebu</h1>
+        <p style="letter-spacing:5px;font-size:0.75rem;font-weight:800;margin-bottom:32px;opacity:0.6;color:var(--text-main);">PRIVATE SPACE</p>
+        <input type="email" id="login-email" placeholder="Email Address" autocomplete="email">
+        <input type="password" id="login-pass" placeholder="Secret Password" autocomplete="current-password">
+        <button id="btn-login" class="btn-primary" style="margin-top:20px;">
+            <span>Unlock Heart</span> <i class="fas fa-heart"></i>
+        </button>
+        <p id="auth-err" style="color:var(--accent);font-size:0.88rem;margin-top:16px;font-weight:700;min-height:22px;"></p>
+    </div>
+</div>
+
+<div id="app-content">
+    <div id="pages-viewport">
+
+        <section id="page-home" class="page active">
+            <div id="monthsary-alert" class="celebration-banner">
+                🎊 Happy Monthsary, My Love! ❤️
+            </div>
+
+            <div class="glass-card" style="text-align:center;padding:32px 20px;">
+                <h2 style="font-family:'Dancing Script';font-size:2.6rem;color:var(--primary);margin-bottom:4px;">Together for</h2>
+                <div class="counter-grid">
+                    <div class="count-item"><span id="y-count" class="count-val">0</span><span class="count-lab">Years</span></div>
+                    <div class="count-item"><span id="m-count" class="count-val">0</span><span class="count-lab">Months</span></div>
+                    <div class="count-item"><span id="d-count" class="count-val">0</span><span class="count-lab">Days</span></div>
+                </div>
+                <div style="height:1px;background:rgba(255,117,140,0.15);margin:20px 0;"></div>
+                <p id="next-m-text" style="font-size:0.88rem;font-weight:800;color:var(--primary);"></p>
+            </div>
+
+            <div class="glass-card quote-card">
+                <h4 style="margin-bottom:12px;font-weight:800;font-size:0.85rem;opacity:0.85;letter-spacing:1px;">
+                    <i class="fas fa-quote-left"></i> Daily Reminder
+                </h4>
+                <p style="font-style:italic;opacity:0.95;font-size:1.1rem;line-height:1.55;">
+                    "Every single day with you is my new favorite day, Bebu."
+                </p>
+            </div>
+
+            <div class="glass-card" style="padding:22px;">
+                <h4 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;opacity:0.55;margin-bottom:16px;">Quick Mood Peek</h4>
+                <div style="display:flex;align-items:center;gap:18px;">
+                    <div id="home-p-emo" style="font-size:3.2rem;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.08));">✨</div>
+                    <div>
+                        <p id="home-p-note" style="font-weight:800;font-size:1.05rem;color:var(--text-main);line-height:1.3;">Waiting for partner...</p>
+                        <span id="home-p-time" style="font-size:0.65rem;opacity:0.5;font-weight:700;display:block;margin-top:2px;"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-chat" class="page">
+            <div id="chat-window"></div>
+        </section>
+
+        <section id="page-mood" class="page">
+            <div class="glass-card">
+                <h3 style="text-align:center;margin-bottom:4px;font-size:1.3rem;">My Mood</h3>
+                <p style="text-align:center;font-size:0.85rem;opacity:0.6;margin-bottom:16px;">How are you feeling right now?</p>
+                <div class="mood-selector" id="mood-options">
+                    <div class="mood-item selected" data-emo="🥰">🥰</div>
+                    <div class="mood-item" data-emo="😊">😊</div>
+                    <div class="mood-item" data-emo="😴">😴</div>
+                    <div class="mood-item" data-emo="😢">😢</div>
+                    <div class="mood-item" data-emo="😤">😤</div>
+                    <div class="mood-item" data-emo="🥺">🥺</div>
+                    <div class="mood-item" data-emo="🔥">🔥</div>
+                    <div class="mood-item" data-emo="🍦">🍦</div>
+                </div>
+                <input type="text" id="mood-note" placeholder="What's on your mind?..." maxlength="120">
+                <button id="btn-update-mood" class="btn-primary" style="margin-top:14px;">Update My Status</button>
+            </div>
+
+            <div class="glass-card partner-mood-card">
+                <div id="p-mood-emo">✨</div>
+                <div style="flex:1;">
+                    <h4 style="font-size:0.7rem;text-transform:uppercase;color:var(--accent);opacity:0.75;letter-spacing:1px;margin-bottom:4px;">Partner's Status</h4>
+                    <p id="p-mood-note" style="font-weight:800;font-size:1.08rem;color:var(--text-main);line-height:1.3;">Not updated yet</p>
+                    <span id="p-mood-time" style="font-size:0.65rem;opacity:0.5;font-weight:700;display:block;margin-top:2px;"></span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="input-bar" id="chat-input-bar" style="opacity:0; pointer-events:none;">
+        <input type="text" id="msg-input" placeholder="Type a sweet message...">
+        <button id="btn-send"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<nav class="nav-bar" id="main-nav" style="display:none;">
+    <div class="nav-item active" data-page="home">
+        <i class="fas fa-home"></i><span>Home</span>
+    </div>
+    <div class="nav-item" data-page="chat">
+        <i class="fas fa-heart"></i><span>Chat</span>
+    </div>
+    <div class="nav-item" data-page="mood">
+        <i class="fas fa-face-smile"></i><span>Mood</span>
+    </div>
+    <div class="nav-item" id="btn-logout">
+        <i class="fas fa-door-open"></i><span>Exit</span>
+    </div>
+</nav>
+
+<script>
+(function initThreeEngine() {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    script.onload = () => buildInteractiveEnvironment();
+    document.head.appendChild(script);
+
+    function buildInteractiveEnvironment() {
+        const canvas = document.getElementById('three-canvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
+        camera.position.z = 28;
+
+        // Lighting Arrays
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const primaryLight = new THREE.DirectionalLight(0xff758c, 1.5);
+        primaryLight.position.set(15, 20, 15);
+        scene.add(primaryLight);
+        
+        const secondaryLight = new THREE.DirectionalLight(0xff7eb3, 0.8);
+        secondaryLight.position.set(-15, -10, 10);
+        scene.add(secondaryLight);
+
+        // Parametric Heart Structure Formula
+        function generateHeartGeometry() {
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 0);
+            // Spline path vectors approximating a smooth volumetric heart container
+            shape.bezierCurveTo(0, 0.6, 0.7, 1.5, 1.5, 1.5);
+            shape.bezierCurveTo(2.5, 1.5, 2.5, 0.5, 2.5, 0.5);
+            shape.bezierCurveTo(2.5, -0.4, 1.6, -1.3, 0, -2.4);
+            shape.bezierCurveTo(-1.6, -1.3, -2.5, -0.4, -2.5, 0.5);
+            shape.bezierCurveTo(-2.5, 0.5, -2.5, 1.5, -1.5, 1.5);
+            shape.bezierCurveTo(-0.7, 1.5, 0, 0.6, 0, 0);
+
+            const extrudeSettings = {
+                depth: 0.5,
+                bevelEnabled: true,
+                bevelSegments: 5,
+                steps: 1,
+                bevelSize: 0.3,
+                bevelThickness: 0.4
+            };
+            const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            geometry.center();
+            return geometry;
+        }
+
+        function createCrystalGeometry() {
+            return new THREE.OctahedronGeometry(1.2, 0);
+        }
+
+        const meshes = [];
+        const totalItems = 18;
+        const targetColors = [0xff758c, #ef476f, 0xff7eb3];
+
+        for (let i = 0; i < totalItems; i++) {
+            const isHeart = Math.random() > 0.4;
+            const geo = isHeart ? generateHeartGeometry() : createCrystalGeometry();
+            
+            const mat = new THREE.MeshPhongMaterial({
+                color: targetColors[Math.floor(Math.random() * targetColors.length)],
+                shininess: 150,
+                specular: new THREE.Color(0xffffff),
+                transparent: true,
+                opacity: 0.75,
+                side: THREE.DoubleSide
+            });
+
+            const mesh = new THREE.Mesh(geo, mat);
+            const uniformScale = Math.random() * 0.7 + 0.5;
+            mesh.scale.set(uniformScale, uniformScale, uniformScale);
+            
+            // Random distribution within the visible viewport bounds
+            mesh.position.set(
+                (Math.random() - 0.5) * 26,
+                (Math.random() - 0.5) * 30,
+                (Math.random() - 0.5) * 12 - 2
+            );
+
+            mesh.userData = {
+                rotX: (Math.random() - 0.5) * 0.01,
+                rotY: (Math.random() - 0.5) * 0.015,
+                bobAmp: Math.random() * 0.6 + 0.2,
+                bobSpeed: Math.random() * 0.5 + 0.3,
+                bobOffset: Math.random() * Math.PI * 2,
+                baseY: mesh.position.y,
+                velocityX: 0,
+                velocityY: 0
+            };
+
+            scene.add(mesh);
+            meshes.push(mesh);
+        }
+
+        // Mouse Vectors for Interaction Draft Forces
+        const pointer = new THREE.Vector2(-999, -999);
+        const prevPointer = new THREE.Vector2(0, 0);
+        const raycaster = new THREE.Raycaster();
+        const clock = new THREE.Clock();
+
+        function trackingPointer(e) {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            pointer.x = (clientX / window.innerWidth) * 2 - 1;
+            pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+        }
+        window.addEventListener('mousemove', trackingPointer);
+        window.addEventListener('touchmove', trackingPointer, { passive: true });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function renderLoop() {
+            requestAnimationFrame(renderLoop);
+            const elapsedTime = clock.getElapsedTime();
+            
+            // Determine relative projection coordinate intersection values on Z plane = 0
+            raycaster.setFromCamera(pointer, camera);
+            const planeZ = new THREE.Vector3();
+            raycaster.ray.at(28, planeZ);
+
+            meshes.forEach(m => {
+                const distance = m.position.distanceTo(planeZ);
+                // Push effect mechanics inside proximity parameters
+                if (distance < 9) {
+                    const pushFactor = (9 - distance) / 9 * 0.09;
+                    m.userData.velocityX += (m.position.x - planeZ.x) / distance * pushFactor;
+                    m.userData.velocityY += (m.position.y - planeZ.y) / distance * pushFactor;
+                }
+
+                // Damping resistance drift application
+                m.userData.velocityX *= 0.94;
+                m.userData.velocityY *= 0.94;
+                m.position.x += m.userData.velocityX;
+                m.position.y += m.userData.velocityY;
+
+                // Seamless biological organic bobbing interpolation back to origin tracking coordinates
+                const oscillationY = Math.sin(elapsedTime * m.userData.bobSpeed + m.userData.bobOffset) * m.userData.bobAmp;
+                m.position.y += (m.userData.baseY + oscillationY - m.position.y) * 0.04;
+
+                m.rotation.x += m.userData.rotX;
+                m.rotation.y += m.userData.rotY;
+            });
+
+            // Camera contextual interpolation matching target orientation
+            camera.position.x += (pointer.x * 2.5 - camera.position.x) * 0.03;
+            camera.position.y += (pointer.y * 2 - camera.position.y) * 0.03;
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+        }
+        renderLoop();
+    }
+})();
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, setDoc, doc, query, orderBy, limit, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAio4XgN8Iq5W7TMx1H7sybgK5PDp1x0j4",
+    authDomain: "bebu-chat-91531.firebaseapp.com",
+    projectId: "bebu-chat-91531",
+    storageBucket: "bebu-chat-91531.firebasestorage.app",
+    messagingSenderId: "569412628886",
+    appId: "1:569412628886:web:e40f5675a0332aff9a6db7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ─── 1. INITIAL PRE-OPENING LIQUID BLOB HIDE TIMEOUT ───
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const loader = document.getElementById('blob-loader');
+        if (loader) {
+            loader.classList.add('exit');
+            setTimeout(() => loader.remove(), 800);
+        }
+    }, 1800);
+});
+
+// ─── 1. AFTER-LOGIN MORPH SEQUENCE MECHANICS ───
+function executeAfterLoginMorphSequence(successCallback) {
+    const authCard = document.getElementById('auth-card-element');
+    const burstLayer = document.getElementById('morph-burst');
+    const burstCircle = document.getElementById('burst-circle');
+    const authScreen = document.getElementById('auth-screen');
+
+    // Step 1: Geometric Collapse of the Login Card
+    authCard.style.transform = "scale(0.4) rotate(8deg)";
+    authCard.style.opacity = "0";
+
+    setTimeout(() => {
+        // Step 2: Transition into Radiant Pulsing Energy Sphere
+        burstLayer.style.opacity = "1";
+        burstCircle.style.transform = "scale(1.2)";
+        burstCircle.style.transition = "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+
+        setTimeout(() => {
+            // Step 3: Rapid Radial Exploded Projection Scaling ('Pop')
+            burstCircle.style.transition = "transform 0.6s cubic-bezier(0.76, 0, 0.24, 1)";
+            burstCircle.style.transform = "scale(45)";
+
+            setTimeout(() => {
+                // Step 4: Fade in Target Layout beneath cleanly
+                authScreen.classList.add('hidden');
+                successCallback();
+
+                setTimeout(() => {
+                    burstLayer.style.transition = "opacity 0.5s ease";
+                    burstLayer.style.opacity = "0";
+                }, 200);
+            }, 450);
+        }, 500);
+    }, 300);
+}
+
+// Auth Login Action Handler
+const btnLogin = document.getElementById('btn-login');
+const authErr = document.getElementById('auth-err');
+
+btnLogin.onclick = async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    
+    if (!email || !pass) { 
+        authErr.innerText = "Fill in both fields, Bebu 💕"; 
+        return; 
+    }
+
+    btnLogin.style.opacity = "0.5";
+    authErr.innerText = "Opening heart…";
+
+    try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        // Execute smooth morph transition sequence upon authentication completion
+        executeAfterLoginMorphSequence(() => {
+            transitionToApplicationState(auth.currentUser);
+        });
+    } catch (error) {
+        authErr.innerText = "Wrong secret, Bebu ❤️";
+        btnLogin.style.opacity = "1";
+    }
+};
+
+// Application View State Handler Initialization
+let chatUnsubscribe = null;
+let moodUnsubscribe = null;
+let navigationLocked = false;
+let currentActivePageIndex = 0;
+const routeIndexMap = { 'home': 0, 'chat': 1, 'mood': 2 };
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        transitionToApplicationState(user);
+    } else {
+        document.getElementById('app-content').classList.remove('visible');
+        document.getElementById('main-nav').style.display = 'none';
+        if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+        if (moodUnsubscribe) { moodUnsubscribe(); moodUnsubscribe = null; }
+    }
+});
+
+function transitionToApplicationState(user) {
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app-content').classList.add('visible');
+    document.getElementById('main-nav').style.display = 'flex';
+    
+    updateMonthsaryEngine();
+    setupChatEngine(user);
+    setupMoodEngine(user);
+    
+    if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+    }
+}
+
+// ─── 2. FIX MULTI-USER CHAT ENGINE ───
+function setupChatEngine(user) {
+    if (chatUnsubscribe) chatUnsubscribe();
+    const chatWindow = document.getElementById('chat-window');
+    const msgQuery = query(collection(db, "messages"), orderBy("timestamp", "asc"), limit(100));
+
+    chatUnsubscribe = onSnapshot(msgQuery, (snapshot) => {
+        chatWindow.innerHTML = "";
+        snapshot.forEach(docSnap => {
+            const messageData = docSnap.data();
+            if (!messageData.timestamp) return;
+
+            // Checked validation structure matching user identity
+            const isMe = messageData.uid === user.uid;
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = `msg-group ${isMe ? 'me' : 'partner'}`;
+
+            const timeObject = messageData.timestamp.toDate();
+            const formattedTime = timeObject.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageWrapper.innerHTML = `
+                <div class="bubble">${sanitizeOutput(messageData.text)}</div>
+                <span class="msg-meta">${formattedTime}</span>
+            `;
+            chatWindow.appendChild(messageWrapper);
+        });
+        chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+    });
+}
+
+document.getElementById('btn-send').onclick = sendMessageAction;
+document.getElementById('msg-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessageAction();
+    }
+});
+
+async function sendMessageAction() {
+    const inputElement = document.getElementById('msg-input');
+    const textVal = inputElement.value.trim();
+    if (!textVal || !auth.currentUser) return;
+    
+    inputElement.value = "";
+    await addDoc(collection(db, "messages"), {
+        text: textVal,
+        uid: auth.currentUser.uid,
+        timestamp: serverTimestamp()
+    });
+}
+
+// ─── 2. FIX MULTI-USER MOOD ENGINE (PARTNER UID SYNCHRONIZATION) ───
+async function setupMoodEngine(user) {
+    // Phase A: Register self dynamically inside the collection cluster lookup mapping schema
+    await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        lastPositionTimestamp: serverTimestamp()
+    }, { merge: true });
+
+    let partnerUid = null;
+    
+    // Phase B: Resolve remote paired documents to distinguish identity records
+    try {
+        const structuralSnapshot = await getDocs(collection(db, "users"));
+        structuralSnapshot.forEach(uDoc => {
+            if (uDoc.id !== user.uid) {
+                partnerUid = uDoc.id;
+            }
+        });
+    } catch (err) {
+        console.error("User directory mapping fault: ", err);
+    }
+
+    if (moodUnsubscribe) moodUnsubscribe();
+
+    // Phase C: Isolate listener execution strictly onto the explicit reference key of the partner
+    if (partnerUid) {
+        moodUnsubscribe = onSnapshot(doc(db, "moods", partnerUid), (snap) => {
+            if (snap.exists()) {
+                applyPartnerMoodUI(snap.data());
+            }
+        });
+    } else {
+        // Fallback catch parameters checking if second paired connection populates asynchronously late
+        moodUnsubscribe = onSnapshot(collection(db, "moods"), (globalSnap) => {
+            globalSnap.forEach(changeDoc => {
+                if (changeDoc.id !== user.uid) {
+                    applyPartnerMoodUI(changeDoc.data());
+                }
+            });
+        });
+    }
+}
+
+function applyPartnerMoodUI(data) {
+    const emoji = data.emoji || '✨';
+    const note = data.note || 'No note written';
+    
+    document.getElementById('p-mood-emo').innerText = emoji;
+    document.getElementById('p-mood-note').innerText = `"${note}"`;
+    
+    document.getElementById('home-p-emo').innerText = emoji;
+    document.getElementById('home-p-note').innerText = note;
+    
+    if (data.timestamp) {
+        const t = data.timestamp.toDate();
+        const outputString = `Updated ${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`;
+        document.getElementById('p-mood-time').innerText = outputString;
+        document.getElementById('home-p-time').innerText = outputString;
+    }
+}
+
+// Mood Selection Configuration Action Intermediaries
+let activeSelectedEmoji = "🥰";
+document.querySelectorAll('#mood-options .mood-item').forEach(item => {
+    item.onclick = () => {
+        document.querySelectorAll('#mood-options .mood-item').forEach(el => el.classList.remove('selected'));
+        item.classList.add('selected');
+        activeSelectedEmoji = item.dataset.emo;
+    };
+});
+
+document.getElementById('btn-update-mood').onclick = async () => {
+    if (!auth.currentUser) return;
+    const trackingNote = document.getElementById('mood-note').value.trim();
+    const actionBtn = document.getElementById('btn-update-mood');
+    
+    actionBtn.innerText = "Saving Status…";
+    actionBtn.disabled = true;
+
+    await setDoc(doc(db, "moods", auth.currentUser.uid), {
+        emoji: activeSelectedEmoji,
+        note: trackingNote || "Feeling good!",
+        timestamp: serverTimestamp()
+    });
+
+    actionBtn.innerText = "Update My Status";
+    actionBtn.disabled = false;
+    document.getElementById('mood-note').value = "";
+    
+    confetti({ particleCount: 50, spread: 40, origin: { y: 0.8 }, colors: ['#ff758c', '#ff7eb3'] });
+};
+
+// ─── 4. LIQUID-SMOOTH VIEW SLIDING TRANSITIONS ───
+document.querySelectorAll('.nav-item[data-page]').forEach(navButton => {
+    navButton.addEventListener('click', () => {
+        if (navigationLocked) return;
+        const targetPageId = navButton.dataset.page;
+        const destinationIndex = routeIndexMap[targetPageId];
+        
+        if (destinationIndex === undefined || destinationIndex === currentActivePageIndex) return;
+        
+        navigationLocked = true;
+        const headingDirection = destinationIndex > currentActivePageIndex ? 1 : -1;
+        
+        const activePageElement = document.querySelector('.page.active');
+        const targetPageElement = document.getElementById('page-' + targetPageId);
+        
+        // Prepare target presentation state offsets safely hidden away beforehand
+        targetPageElement.style.transition = 'none';
+        targetPageElement.style.transform = `translate3d(${headingDirection * 100}%, 0, 0)`;
+        targetPageElement.style.opacity = '0';
+        targetPageElement.classList.add('active');
+        
+        // Force rendering architecture reflow flush execution matrix
+        targetPageElement.getBoundingClientRect();
+        
+        // Execute Hardware Accelerated Sliding Sequence Transitions
+        targetPageElement.style.transition = "opacity 0.45s cubic-bezier(0.32, 0.94, 0.6, 1), transform 0.45s cubic-bezier(0.32, 0.94, 0.6, 1)";
+        targetPageElement.style.transform = "translate3d(0, 0, 0)";
+        targetPageElement.style.opacity = "1";
+        
+        if (activePageElement) {
+            activePageElement.style.transition = "opacity 0.45s cubic-bezier(0.32, 0.94, 0.6, 1), transform 0.45s cubic-bezier(0.32, 0.94, 0.6, 1)";
+            activePageElement.style.transform = `translate3d(${-headingDirection * 100}%, 0, 0)`;
+            activePageElement.style.opacity = "0";
+        }
+
+        // Persistent Chat input block management presentation visibility
+        const inputContainer = document.getElementById('chat-input-bar');
+        if (targetPageId === 'chat') {
+            inputContainer.style.display = 'flex';
+            setTimeout(() => { 
+                inputContainer.style.opacity = '1'; 
+                inputContainer.style.pointerEvents = 'all';
+                const win = document.getElementById('chat-window');
+                win.scrollTop = win.scrollHeight;
+            }, 50);
+        } else {
+            inputContainer.style.opacity = '0';
+            inputContainer.style.pointerEvents = 'none';
+            setTimeout(() => { inputContainer.style.display = 'none'; }, 300);
+        }
+
+        setTimeout(() => {
+            if (activePageElement) {
+                activePageElement.classList.remove('active');
+                activePageElement.style.transform = '';
+                activePageElement.style.opacity = '';
+                activePageElement.style.transition = '';
+            }
+            navigationLocked = false;
+        }, 460);
+
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        navButton.classList.add('active');
+        currentActivePageIndex = destinationIndex;
+    });
+});
+
+// Monthsary Interface Presentation Calculations
+function updateMonthsaryEngine() {
+    const start = new Date("2025-10-25");
+    const now = new Date();
+
+    let years = now.getFullYear() - start.getFullYear();
+    let months = now.getMonth() - start.getMonth();
+    let days = now.getDate() - start.getDate();
+
+    if (days < 0) {
+        months--;
+        days += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    }
+    if (months < 0) { years--; months += 12; }
+
+    document.getElementById('y-count').innerText = years;
+    document.getElementById('m-count').innerText = months;
+    document.getElementById('d-count').innerText = days;
+
+    if (now.getDate() === 25) {
+        document.getElementById('monthsary-alert').style.display = 'block';
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#ff758c', '#ef476f', '#ffd700'] });
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("💖 Happy Monthsary, Bebu!");
+        }
+    }
+
+    let nextCelebrationDate = new Date(now.getFullYear(), now.getMonth(), 25);
+    if (now.getDate() >= 25) nextCelebrationDate.setMonth(nextCelebrationDate.getMonth() + 1);
+    const dateRemainderDifference = Math.ceil((nextCelebrationDate - now) / (1000 * 60 * 60 * 24));
+    
+    document.getElementById('next-m-text').innerHTML = 
+        `<i class="fas fa-hourglass-half"></i> ${dateRemainderDifference} day${dateRemainderDifference !== 1 ? 's' : ''} until our next monthsary ✨`;
+}
+
+document.getElementById('btn-logout').onclick = async () => {
+    if (!confirm("Leave this private space?")) return;
+    await signOut(auth);
+    window.location.reload();
+};
+
+function sanitizeOutput(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+</script>
+</body>
+</html>
             overflow: hidden;
             display: flex;
             flex-direction: column;
